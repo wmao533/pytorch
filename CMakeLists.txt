@@ -211,6 +211,9 @@ cmake_dependent_option(
 cmake_dependent_option(
     USE_EXPERIMENTAL_CUDNN_V8_API "Use experimental cuDNN v8 API" ON
     "USE_CUDNN" OFF)
+cmake_dependent_option(
+    USE_FLASH_ATTENTION "Use flash attenion fused scaled dot product kernel" ON
+    "USE_CUDA AND NOT MSVC" OFF)
 option(USE_FBGEMM "Use FBGEMM (quantized 8-bit server operators)" ON)
 option(USE_KINETO "Use Kineto profiling library" ON)
 option(USE_CUPTI_SO "Use CUPTI as a shared library" ON)

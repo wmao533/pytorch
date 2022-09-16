@@ -156,10 +156,11 @@ file(GLOB native_transformers_hip_cpp "native/transformers/hip/*.cpp")
 file(GLOB native_quantized_cudnn_hip_cpp "native/quantized/cudnn/hip/*.cpp")
 file(GLOB native_utils_cpp "native/utils/*.cpp")
 
-if(USE_CUDA AND NOT USE_ROCM)
-  # flash_attention sources
-  file(GLOB flash_attention_cuda_cu "native/transformers/cuda/flash_attn/*.cu")
-  file(GLOB flash_attention_cuda_cpp "native/transformers/cuda/flash_attn/*.cpp")
+# flash_attention sources
+file(GLOB flash_attention_cuda_cu "native/transformers/cuda/flash_attn/*.cu")
+file(GLOB flash_attention_cuda_cpp "native/transformers/cuda/flash_attn/*.cpp")
+
+if(USE_FLASH_ATTENTION)
   list(APPEND native_transformers_cuda_cu ${flash_attention_cuda_cu})
   list(APPEND native_transformers_cuda_cpp ${flash_attention_cuda_cpp})
 endif()
@@ -423,7 +424,9 @@ if(NOT MSVC AND NOT EMSCRIPTEN AND NOT INTERN_BUILD_MOBILE)
 endif()
 
 if(USE_CUDA AND NOT USE_ROCM)
-  list(APPEND ATen_CUDA_INCLUDE ${CMAKE_CURRENT_SOURCE_DIR}/../../../third_party/cutlass/include)
+  if(USE_FLASH_ATTENTION)
+    list(APPEND ATen_CUDA_INCLUDE ${CMAKE_CURRENT_SOURCE_DIR}/../../../third_party/cutlass/include)
+  endif()
   if($ENV{ATEN_STATIC_CUDA})
     list(APPEND ATen_CUDA_DEPENDENCY_LIBS
       ${CUDA_LIBRARIES}
