@@ -500,15 +500,18 @@ def _raw_device_count_nvml() -> int:
     return dev_arr[0]
 
 def _device_count_nvml() -> int:
+    visible_devices = _parse_visible_devices()
+    if len(visible_devices) == 0:
+        return 0
     try:
         raw_cnt = _raw_device_count_nvml()
-        if raw_cnt <= 0:
-            return raw_cnt
-        return len(set(range(raw_cnt)).intersection(_parse_visible_devices()))
     except OSError:
         return -1
     except AttributeError:
         return -1
+    if raw_cnt <= 0:
+        return raw_cnt
+    return len(set(range(raw_cnt)).intersection(visible_devices))
 
 @_lru_cache(maxsize=1)
 def device_count() -> int:
