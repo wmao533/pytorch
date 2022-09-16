@@ -18,8 +18,20 @@ __all__ = [
 
 # DTypeConfig dict keys
 INPUT_DTYPE_DICT_KEY = "input_dtype"
+INPUT_QUANT_MIN_DICT_KEY = "input_quant_min"
+INPUT_QUANT_MAX_DICT_KEY = "input_quant_max"
+INPUT_SCALE_MIN_DICT_KEY = "input_scale_min"
+INPUT_SCALE_MAX_DICT_KEY = "input_scale_max"
 OUTPUT_DTYPE_DICT_KEY = "output_dtype"
+OUTPUT_QUANT_MIN_DICT_KEY = "output_quant_min"
+OUTPUT_QUANT_MAX_DICT_KEY = "output_quant_max"
+OUTPUT_SCALE_MIN_DICT_KEY = "output_scale_min"
+OUTPUT_SCALE_MAX_DICT_KEY = "output_scale_max"
 WEIGHT_DTYPE_DICT_KEY = "weight_dtype"
+WEIGHT_QUANT_MIN_DICT_KEY = "weight_quant_min"
+WEIGHT_QUANT_MAX_DICT_KEY = "weight_quant_max"
+WEIGHT_SCALE_MIN_DICT_KEY = "weight_scale_min"
+WEIGHT_SCALE_MAX_DICT_KEY = "weight_scale_max"
 BIAS_DTYPE_DICT_KEY = "bias_dtype"
 IS_DYNAMIC_DICT_KEY = "is_dynamic"
 
@@ -66,12 +78,28 @@ class ObservationType(Enum):
 @dataclass
 class DTypeConfig:
     """
-    Config for the set of supported input/output activation, weight, and bias data types for the
-    patterns defined in :class:`~torch.ao.quantization.backend_config.BackendConfig`.
+    Config for the set of supported data types, quantization value ranges, and scale value ranges
+    for activations and weights for the patterns defined in
+    :class:`~torch.ao.quantization.backend_config.BackendConfig`.
     """
     input_dtype: Optional[torch.dtype] = None
+    input_quant_min: Optional[float] = None
+    input_quant_max: Optional[float] = None
+    input_scale_min: Optional[float] = None
+    input_scale_max: Optional[float] = None
+
     output_dtype: Optional[torch.dtype] = None
+    output_quant_min: Optional[float] = None
+    output_quant_max: Optional[float] = None
+    output_scale_min: Optional[float] = None
+    output_scale_max: Optional[float] = None
+
     weight_dtype: Optional[torch.dtype] = None
+    weight_quant_min: Optional[float] = None
+    weight_quant_max: Optional[float] = None
+    weight_scale_min: Optional[float] = None
+    weight_scale_max: Optional[float] = None
+
     bias_dtype: Optional[torch.dtype] = None
     is_dynamic: Optional[bool] = None
 
@@ -81,17 +109,58 @@ class DTypeConfig:
         Create a ``DTypeConfig`` from a dictionary with the following items (all optional):
 
             "input_dtype": torch.dtype
+            "input_quant_min": float
+            "input_quant_max": float
+            "input_scale_min": float
+            "input_scale_max": float
             "output_dtype": torch.dtype
+            "output_quant_min": float
+            "output_quant_max": float
+            "output_scale_min": float
+            "output_scale_max": float
             "weight_dtype": torch.dtype
+            "weight_quant_min": float
+            "weight_quant_max": float
+            "weight_scale_min": float
+            "weight_scale_max": float
             "bias_type": torch.dtype
             "is_dynamic": bool
         """
         input_dtype = dtype_config_dict.get(INPUT_DTYPE_DICT_KEY, None)
+        input_quant_min = dtype_config_dict.get(INPUT_QUANT_MIN_DICT_KEY, None)
+        input_quant_max = dtype_config_dict.get(INPUT_QUANT_MAX_DICT_KEY, None)
+        input_scale_min = dtype_config_dict.get(INPUT_SCALE_MIN_DICT_KEY, None)
+        input_scale_max = dtype_config_dict.get(INPUT_SCALE_MAX_DICT_KEY, None)
         output_dtype = dtype_config_dict.get(OUTPUT_DTYPE_DICT_KEY, None)
+        output_quant_min = dtype_config_dict.get(OUTPUT_QUANT_MIN_DICT_KEY, None)
+        output_quant_max = dtype_config_dict.get(OUTPUT_QUANT_MAX_DICT_KEY, None)
+        output_scale_min = dtype_config_dict.get(OUTPUT_SCALE_MIN_DICT_KEY, None)
+        output_scale_max = dtype_config_dict.get(OUTPUT_SCALE_MAX_DICT_KEY, None)
         weight_dtype = dtype_config_dict.get(WEIGHT_DTYPE_DICT_KEY, None)
+        weight_quant_min = dtype_config_dict.get(WEIGHT_QUANT_MIN_DICT_KEY, None)
+        weight_quant_max = dtype_config_dict.get(WEIGHT_QUANT_MAX_DICT_KEY, None)
+        weight_scale_min = dtype_config_dict.get(WEIGHT_SCALE_MIN_DICT_KEY, None)
+        weight_scale_max = dtype_config_dict.get(WEIGHT_SCALE_MAX_DICT_KEY, None)
         bias_dtype = dtype_config_dict.get(BIAS_DTYPE_DICT_KEY, None)
         is_dynamic = dtype_config_dict.get(IS_DYNAMIC_DICT_KEY, None)
-        return cls(input_dtype, output_dtype, weight_dtype, bias_dtype, is_dynamic)
+        return cls(
+            input_dtype=input_dtype,
+            input_quant_min=input_quant_min,
+            input_quant_max=input_quant_max,
+            input_scale_min=input_scale_min,
+            input_scale_max=input_scale_max,
+            output_dtype=output_dtype,
+            output_quant_min=output_quant_min,
+            output_quant_max=output_quant_max,
+            output_scale_min=output_scale_min,
+            output_scale_max=output_scale_max,
+            weight_dtype=weight_dtype,
+            weight_quant_min=weight_quant_min,
+            weight_quant_max=weight_quant_max,
+            weight_scale_min=weight_scale_min,
+            weight_scale_max=weight_scale_max,
+            bias_dtype=bias_dtype,
+            is_dynamic=is_dynamic)
 
     def to_dict(self) -> Dict[str, Any]:
         """
@@ -101,10 +170,34 @@ class DTypeConfig:
         dtype_config_dict: Dict[str, Any] = {}
         if self.input_dtype is not None:
             dtype_config_dict[INPUT_DTYPE_DICT_KEY] = self.input_dtype
+        if self.input_quant_min is not None:
+            dtype_config_dict[INPUT_QUANT_MIN_DICT_KEY] = self.input_quant_min
+        if self.input_quant_max is not None:
+            dtype_config_dict[INPUT_QUANT_MAX_DICT_KEY] = self.input_quant_max
+        if self.input_scale_min is not None:
+            dtype_config_dict[INPUT_SCALE_MIN_DICT_KEY] = self.input_scale_min
+        if self.input_scale_max is not None:
+            dtype_config_dict[INPUT_SCALE_MAX_DICT_KEY] = self.input_scale_max
         if self.output_dtype is not None:
             dtype_config_dict[OUTPUT_DTYPE_DICT_KEY] = self.output_dtype
+        if self.output_quant_min is not None:
+            dtype_config_dict[OUTPUT_QUANT_MIN_DICT_KEY] = self.output_quant_min
+        if self.output_quant_max is not None:
+            dtype_config_dict[OUTPUT_QUANT_MAX_DICT_KEY] = self.output_quant_max
+        if self.output_scale_min is not None:
+            dtype_config_dict[OUTPUT_SCALE_MIN_DICT_KEY] = self.output_scale_min
+        if self.output_scale_max is not None:
+            dtype_config_dict[OUTPUT_SCALE_MAX_DICT_KEY] = self.output_scale_max
         if self.weight_dtype is not None:
             dtype_config_dict[WEIGHT_DTYPE_DICT_KEY] = self.weight_dtype
+        if self.weight_quant_min is not None:
+            dtype_config_dict[WEIGHT_QUANT_MIN_DICT_KEY] = self.weight_quant_min
+        if self.weight_quant_max is not None:
+            dtype_config_dict[WEIGHT_QUANT_MAX_DICT_KEY] = self.weight_quant_max
+        if self.weight_scale_min is not None:
+            dtype_config_dict[WEIGHT_SCALE_MIN_DICT_KEY] = self.weight_scale_min
+        if self.weight_scale_max is not None:
+            dtype_config_dict[WEIGHT_SCALE_MAX_DICT_KEY] = self.weight_scale_max
         if self.bias_dtype is not None:
             dtype_config_dict[BIAS_DTYPE_DICT_KEY] = self.bias_dtype
         if self.is_dynamic is not None:
